@@ -20,9 +20,9 @@ def evaluate(site, date, model_name='best'):
             'actual': daily_data['actual_cost'],
             'baseline': daily_data['baseline_cost']
         },
-        'degree-days': {
-            'cooling': weather_mean,
-            'heating': None
+        'OAT_mean': {
+            'event': weather_mean,
+            'baseline': None
         },
         'baseline-type': best_model.name,
         'baseline-rmse': best_model.rmse,

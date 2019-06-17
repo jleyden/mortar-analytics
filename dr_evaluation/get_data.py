@@ -39,36 +39,6 @@ def get_weather(site, start, end, agg, window, cli):
     result = cli.fetch(request)
     return result['weather']
 
-# def get_power(site, start, end, agg, window, cli, data_source='green_button'):
-#     if data_source=='eagle':
-#         power_query = """SELECT ?meter WHERE {
-#                 ?meter rdf:type brick:Building_Electric_Meter
-#             };"""
-#     else:
-#         power_query = """SELECT ?meter WHERE {
-#                 ?meter rdf:type brick:Green_Button_Meter
-#             };"""
-#     query_agg = eval('pymortar.' + str.upper(agg))
-#     request = pymortar.FetchRequest(
-#         sites=[site],
-#         views = [
-#             pymortar.View(name='power', definition=power_query)
-#         ],
-#         time = pymortar.TimeParams(start=start, end=end),
-#         dataFrames=[
-#             pymortar.DataFrame(
-#             name='power',
-#             aggregation=query_agg,
-#             window=window,
-#             timeseries=[
-#                 pymortar.Timeseries(
-#                     view='power',
-#                     dataVars=['?meter'])
-#             ])
-#         ]
-#     )
-#     result = cli.fetch(request)
-#     return result['power']
 
 def get_power(site, start, end, agg, window, cli):
 
@@ -152,33 +122,3 @@ def get_df(site, start, end, agg='MEAN', interval='15min'):
     data.columns = ['power', 'weather']
 
     return data
-
-# def get_df(site, start, end, agg='MEAN', interval='15min',data_source='green_button'):
-#
-#     # Get weather
-#     weather = get_weather(site, start, end, agg=agg, window=interval, cli=cli)
-#     if weather.index.tz is None:
-#         weather.index = weather.index.tz_localize('UTC')
-#     weather.index = weather.index.tz_convert('US/Pacific')
-#
-#     closest_station = get_closest_station(site)
-#     if closest_station is not None:
-#         weather = pd.DataFrame(weather[closest_station])
-#     else:
-#         weather = pd.DataFrame(weather.mean(axis=1))
-#
-#     # Get power
-#     if data_source=='eagle':
-#         power = get_power(site, start, end, agg=agg, window=interval, cli=cli,data_source=data_source)
-#     else:
-#         power = get_power(site, start, end, agg=agg, window=interval, cli=cli) * 4
-#     if power.index.tz is None:
-#         power.index = power.index.tz_localize('UTC')
-#     power.index = power.index.tz_convert('US/Pacific')
-#
-#     # Merge
-#     power_sum = pd.DataFrame(power.sum(axis=1))
-#     data = power_sum.merge(weather, left_index=True, right_index=True)
-#     data.columns = ['power', 'weather']
-#
-#     return data
