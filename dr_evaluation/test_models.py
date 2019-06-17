@@ -25,7 +25,7 @@ def test_models(site, models='all'):
 
     start_train = pd.to_datetime('2016-01-01').tz_localize('US/Pacific').isoformat()
     end_train = pd.to_datetime(datetime.datetime.today().date()).tz_localize('US/Pacific').isoformat()
-    
+
     # Use datetime.date objects for DR-event days
     dr_event_dates = [pd.to_datetime(d).date() for d in pge_events]
 
@@ -52,12 +52,12 @@ def test_models(site, models='all'):
             model.train(site, dr_event_dates)
         else:
             model.train(site, exclude_dates)
-        
+
         # test on all test days
         errors = []
 
         for date in test_days:
-            actual, prediction = model.predict(site, date)
+            actual, prediction, event_weather = model.predict(site, date)
             try:
                 errors.append(mean_squared_error(actual, prediction))
             except Exception as e:
@@ -79,4 +79,3 @@ def test_models(site, models='all'):
     pickle.dump(best_model, write_file)
 
     return response
-    

@@ -29,7 +29,7 @@ class BaselineModel(ABC):
             exclude dates (list of datetime.date or string in YYYY-MM-DD format): dates to exclude from training
         '''
         pass
-    
+
     @abstractmethod
     def predict(self, site, date):
         '''
@@ -41,7 +41,7 @@ class BaselineModel(ABC):
 
 
 class WeatherModel(BaselineModel):
-    
+
     def __init__(self, init_args, rmse=None):
         '''
         init_args:
@@ -54,7 +54,7 @@ class WeatherModel(BaselineModel):
         self.name = "Weather Model: {} out of {} last days".format(self.X, self.Y)
         self.site = None
         self.exclude_dates = None
-    
+
     def train(self, site, exclude_dates):
         self.site = site
         self.exclude_dates = exclude_dates
@@ -63,12 +63,15 @@ class WeatherModel(BaselineModel):
     def predict(self, site, event_day):
         # Get the correct data for prediction
         start, end = get_month_window(event_day)
-        data = get_df(site, start, end)
+        data = get_df(site, start, end, agg='MEAN', interval='15min')
+        #added two lines below
+        #data['weather'] = data['weather'].interpolate()
+        event_weather=data[event_day.strftime("%Y-%m-%d")][['weather']]
         actual, prediction = weather_model(event_day, data, self.exclude_dates, self.X, self.Y)
-        return actual, prediction
+        return actual, prediction, event_weather
 
 class PowerModel(BaselineModel):
-    
+
     def __init__(self, init_args, rmse=None):
         '''
         init_args:
@@ -90,9 +93,13 @@ class PowerModel(BaselineModel):
     def predict(self, site, event_day):
         # Get the correct data for prediction
         start, end = get_month_window(event_day)
-        data = get_df(site, start, end)
+        data = get_df(site, start, end, agg='MEAN', interval='15min')
+        #added two lines below
+        #data['weather'] = data['weather'].interpolate()
+        event_weather=data[event_day.strftime("%Y-%m-%d")][['weather']]
+
         actual, prediction = power_model(event_day, data, self.exclude_dates, self.X, self.Y)
-        return actual, prediction
+        return actual, prediction, event_weather
 
 class RidgeModel(BaselineModel):
 
@@ -103,7 +110,7 @@ class RidgeModel(BaselineModel):
         self.site = None
         self.exclude_dates = None
 
-    
+
     def train(self, site, exclude_dates):
         """
         Fit the regression model for a site during for the specified window
@@ -122,18 +129,18 @@ class RidgeModel(BaselineModel):
         weekdays = get_workdays(start_train, end_train)
         day_filter = [d in weekdays for d in data['date']]
         df = data[day_filter]
-        
+
         # Exclude dates
         day_filter = [d not in exclude_dates for d in df.index.date]
         df = df[day_filter]
 
         # Create ridge features
         df = create_ridge_features(df)
-        
+
         # Remove NA rows
         df = df.dropna()
         df = df[df['power'] != 0]
-        
+
         # Train model
         X_train, y_train = df.drop(['power', 'weather', 'date'], axis=1), df['power']
         model = RidgeCV(normalize=True, alphas=alphas)
@@ -147,8 +154,10 @@ class RidgeModel(BaselineModel):
         start, end = get_window_of_day(event_day)
 
         # Get data from pymortar
-        data = get_df(site, start, end)
+        #changed line below
+        data = get_df(site, start, end, agg='MEAN', interval='15min')
         data['weather'] = data['weather'].interpolate()
+        event_weather=data[event_day.strftime("%Y-%m-%d")][['weather']]
 
         # Get ridge features
         df = create_ridge_features(data)
@@ -160,7 +169,7 @@ class RidgeModel(BaselineModel):
         baseline = self.model.predict(X_test)
         baseline = pd.Series(baseline, index=actual.index)
 
-        return actual, baseline
+        return actual, baseline, event_weather
 
 all_models = {
     'weather_5_10': {

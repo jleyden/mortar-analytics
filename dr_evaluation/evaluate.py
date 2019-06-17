@@ -10,7 +10,8 @@ def evaluate(site, date, model_name='best'):
     best_model_path = './models/{}/{}.txt'.format(site, model_name)
     model_file = open(best_model_path, 'rb')
     best_model = pickle.load(model_file)
-    actual, prediction = best_model.predict(site, date)
+    actual, prediction, event_weather = best_model.predict(site, date)
+    weather_mean=event_weather[((event_weather.index.hour>=14) & (event_weather.index.hour<=18))].mean()
     daily_data = get_daily_data(site, actual, prediction)
     return {
         'site': site,
@@ -20,7 +21,7 @@ def evaluate(site, date, model_name='best'):
             'baseline': daily_data['baseline_cost']
         },
         'degree-days': {
-            'cooling': None,
+            'cooling': weather_mean,
             'heating': None
         },
         'baseline-type': best_model.name,

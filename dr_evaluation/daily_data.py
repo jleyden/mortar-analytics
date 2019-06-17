@@ -8,6 +8,7 @@ def get_daily_data(site, actual, baseline):
     # Calculate costs
     actual_cost = calc_price(actual, site, start_time, end_time)
     baseline_cost = calc_price(baseline, site, start_time, end_time)
+    
 
     # Calculate energy in kwH
     actual_energy = power_15min_to_hourly_energy(actual) / 1000
