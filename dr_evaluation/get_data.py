@@ -6,11 +6,22 @@ from .utils import get_closest_station
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))+'/'
 cli = pymortar.Client()
 
-def adjust(df, site):
-    site_map = pd.read_csv(os.path.join(PROJECT_ROOT, 'site_meters_map.csv'), index_col='site')
-    multiplier=site_map.loc[site,'eagle_multiplier']
-    df_adjusted=df*multiplier
-    return df_adjusted, multiplier
+# def adjust(df, site):
+#     site_map = pd.read_csv(os.path.join(PROJECT_ROOT, 'site_meters_map.csv'), index_col='site')
+#     multiplier=site_map.loc[site,'eagle_multiplier']
+#     df_adjusted=df*multiplier
+#     return df_adjusted, multiplier
+
+def adjust(df):
+    for meter in df.columns.values:
+        multiplier_map=pd.read_csv(os.path.join(PROJECT_ROOT, 'site_meters_map.csv'),index_col='Electric_Meter')
+        #multiplier_map=site_map.set_index('Electric_Meter')
+        multiplier=multiplier_map.loc[meter,'eagle_multiplier']
+        df[[meter]]=df[[meter]]*multiplier
+    if len(df.columns)>1:
+        df=pd.DataFrame(df.sum(axis=1))
+        df.columns=['combined meters']
+    return df
 
 def get_weather(site, start, end, agg, window, cli):
     weather_query = """SELECT ?t
@@ -89,7 +100,7 @@ def get_power(site, start, end, agg, window, cli):
     result_gb = cli.fetch(request_gb)
     power_gb=result_gb['power']*4000 #adjusts to from energy to power (15 min period), and from kw to w
     result_eagle = cli.fetch(request_eagle)
-    power_eagle, multiplier=adjust(result_eagle['power'], site)
+    power_eagle=adjust(result_eagle['power'])
     power_eagle.columns=[power_gb.columns[0]]
     power=power_gb.fillna(value=power_eagle) # power uses available gb data, fills NA with eagle data
 
