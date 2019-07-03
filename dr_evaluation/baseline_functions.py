@@ -33,9 +33,10 @@ def select_demand(data): #removed _
 
     return demand
 
-def create_pivot(data, freq="15min"): #removed _
+def create_pivot(df_col, freq="15min"): #removed _
 
     if freq=="15min": # we are using 15 minute intervals so we can accurately calculate cost
+        data=df_col.copy()
         data["date"] = data.index.date
         data["combined"]=data.index.hour+(data.index.minute*(1.0/60.0))
         data_multi=data.set_index(["date","combined"])
@@ -46,6 +47,7 @@ def create_pivot(data, freq="15min"): #removed _
 
     elif freq=="1h":
         # add date and hour for new index
+        data=df_col.copy()
         data["date"] = data.index.date
         data["hour"] = data.index.hour
         data_multi=data.set_index(["date","hour"])
@@ -215,10 +217,16 @@ def parse_date(date):
     dd=date[8:10]
     return(int(yyyy),int(mm),int(dd))
 
-def calculate_rmse(demand_baseline, event_index):
-    demand_pivot.fillna(method='bfill',inplace=True) # TODO find a better solution
-    RMSE=np.sqrt(mean_squared_error(demand_baseline,demand_pivot[demand_pivot.index==event_index].T))
+def calculate_rmse(demand_baseline, demand_pivot, event_index):
+    demand_pivot.fillna(method='ffill',inplace=True) # TODO find a better solution
+    RMSE=np.sqrt(mean_squared_error(demand_pivot[demand_pivot.index==event_index].T,demand_baseline))
     return RMSE
+
+def calculate_CVrmse(demand_baseline, demand_pivot, event_index):
+    demand_pivot.fillna(method='ffill',inplace=True) # TODO find a better solution
+    RMSE=np.sqrt(mean_squared_error(demand_pivot[demand_pivot.index==event_index].T,demand_baseline))
+    CV_RMSE=(RMSE/(demand_pivot[demand_pivot.index==event_index].values[0].mean()))*100
+    return CV_RMSE
 
 
 def mape_vectorized_v2(a, b):
