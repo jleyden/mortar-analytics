@@ -11,13 +11,14 @@ import pickle
 import operator
 
 
+
 def test_models(site, models='all'):
 
     # initialize directory for model files
-    if not os.path.exists('./models'):
-        os.mkdir('./models')
-    if not os.path.exists('./models/{}'.format(site)):
-        os.mkdir('./models/{}'.format(site))
+    if not os.path.exists('models'):
+        os.mkdir('models')
+    if not os.path.exists('models/{}'.format(site)):
+        os.mkdir('models/{}'.format(site))
 
     # By default, test all models
     if models == 'all':
@@ -65,7 +66,7 @@ def test_models(site, models='all'):
 
         test_rmse = np.sqrt(np.mean(errors))
         model.rmse = test_rmse
-        write_file_path = './models/{}/{}.txt'.format(site, model_name)
+        write_file_path = 'models/{}/{}.txt'.format(site, model_name)
         write_file = open(write_file_path, 'wb')
         pickle.dump(model, write_file)
 
@@ -74,7 +75,7 @@ def test_models(site, models='all'):
 
     best_model = min(model_errors.items(), key=operator.itemgetter(1))[0]
 
-    write_file_path = './models/{}/best.txt'.format(site)
+    write_file_path = 'models/{}/best.txt'.format(site)
     write_file = open(write_file_path, 'wb')
     pickle.dump(best_model, write_file)
 

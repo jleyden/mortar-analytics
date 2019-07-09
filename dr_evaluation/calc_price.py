@@ -37,7 +37,7 @@ def calc_total_price(power_vector, tariff_options, start_datetime, end_datetime,
     tariff_options: a dictionary of the form {
         utility_id: '14328',
         sector: 'Commercial',
-        tariff_rate_of_interest: 'A-1 Small General Service', 
+        tariff_rate_of_interest: 'A-1 Small General Service',
         distrib_level_of_interest=None, #TODO: Figure out what this is
         phasewing='Single',
         tou=True
@@ -54,10 +54,10 @@ def calc_total_price(power_vector, tariff_options, start_datetime, end_datetime,
         energy_vector = power_vector
     energy_vector = energy_vector / 1000
     if pd.isna(tariff_options['phasewing']):
-        tariff_options['phasewing'] = 'Single'
+        tariff_options['phasewing'] = None
     tariff = OpenEI_tariff(tariff_options['utility_id'],
                   tariff_options['sector'],
-                  tariff_options['tariff_rate_of_interest'], 
+                  tariff_options['tariff_rate_of_interest'],
                   tariff_options['distrib_level_of_interest'],
                   tariff_options['phasewing'],
                   tariff_options['tou'],
