@@ -1,6 +1,7 @@
 import pymortar
 import pandas as pd
 import os
+import numpy as np
 
 from .utils import get_closest_station
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))+'/'
@@ -98,11 +99,20 @@ def get_power(site, start, end, agg, window, cli):
         ]
     )
     result_gb = cli.fetch(request_gb)
-    power_gb=result_gb['power']*4000 #adjusts to from energy to power (15 min period), and from kw to w
     result_eagle = cli.fetch(request_eagle)
-    power_eagle=adjust(result_eagle['power'])
-    power_eagle.columns=[power_gb.columns[0]]
-    power=power_gb.fillna(value=power_eagle) # power uses available gb data, fills NA with eagle data
+    try:
+        power_gb=result_gb['power']*4000 #adjusts to from energy to power (15 min period), and from kw to w
+        power_eagle=adjust(result_eagle['power'])
+        power_eagle.columns=[power_gb.columns[0]]
+        power=power_gb.fillna(value=power_eagle) # power uses available gb data, fills NA with eagle data
+    except:
+        if np.size(result_gb['power'])>1:
+            power=result_gb['power']*4000
+        elif np.size(result_eagle['power'])>1:
+            power=adjust(result_eagle['power'])
+        else:
+            print("no data")
+
 
     return power
 

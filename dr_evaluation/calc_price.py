@@ -24,6 +24,7 @@ def calc_price(power_vector, site, start_datetime, end_datetime):
     tariff['distrib_level_of_interest'] = eval_nan(tariff['distrib_level_of_interest'])
     tariff['option_exclusion'] = eval_nan(tariff['option_exclusion'])
     tariff['option_mandatory'] = eval_nan(tariff['option_mandatory'])
+
     total_price = calc_total_price(power_vector, tariff, start_datetime, end_datetime)
     return total_price
 

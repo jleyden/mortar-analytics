@@ -5,7 +5,7 @@ TED_meters = set(['jesse-turner-center'])
 client = pymortar.Client()
 
 def get_greenbutton_id(site, use_TED_meter=False):
-    if use_TED_meter: 
+    if use_TED_meter or site in TED_meters:
         power_query = """SELECT ?meter WHERE {
             ?meter rdf:type/rdfs:subClassOf* brick:Building_Electric_Meter
         };"""
@@ -36,6 +36,6 @@ def get_greenbutton_id(site, use_TED_meter=False):
     )
     result = client.fetch(request)
     return result['power'].columns[0]
-    
+
 
 # print(get_greenbutton_id('ciee', "2018-01-01T10:00:00-07:00", "2018-08-12T10:00:00-07:00"))
