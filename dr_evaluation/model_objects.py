@@ -67,8 +67,8 @@ class WeatherModel(BaselineModel):
         #added two lines below
         #data['weather'] = data['weather'].interpolate()
         event_weather=data[event_day.strftime("%Y-%m-%d")][['weather']]
-        actual, prediction = weather_model(event_day, data, self.exclude_dates, self.X, self.Y)
-        return actual, prediction, event_weather
+        actual, prediction,baseline_weather = weather_model(event_day, data, self.exclude_dates, self.X, self.Y)
+        return actual, prediction, event_weather, baseline_weather
 
 class PowerModel(BaselineModel):
 
@@ -98,8 +98,8 @@ class PowerModel(BaselineModel):
         #data['weather'] = data['weather'].interpolate()
         event_weather=data[event_day.strftime("%Y-%m-%d")][['weather']]
 
-        actual, prediction = power_model(event_day, data, self.exclude_dates, self.X, self.Y)
-        return actual, prediction, event_weather
+        actual, prediction, baseline_weather = power_model(event_day, data, self.exclude_dates, self.X, self.Y)
+        return actual, prediction, event_weather, baseline_weather
 
 class RidgeModel(BaselineModel):
 
@@ -168,8 +168,9 @@ class RidgeModel(BaselineModel):
         # Predict for the specified event date
         baseline = self.model.predict(X_test)
         baseline = pd.Series(baseline, index=actual.index)
+        baseline_weather='N/A'
 
-        return actual, baseline, event_weather
+        return actual, baseline, event_weather, baseline_weather
 
 all_models = {
     'weather_5_10': {

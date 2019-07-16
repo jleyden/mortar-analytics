@@ -66,7 +66,8 @@ def test_models(site, models='all'):
 
         test_rmse = np.sqrt(np.mean(errors))
         model.rmse = test_rmse
-        write_file_path = 'models/{}/{}.txt'.format(site, model_name)
+        #write_file_path = 'models/{}/{}.txt'.format(site, model_name)
+        write_file_path = 'models/{}/{}'.format(site, model_name)
         write_file = open(write_file_path, 'wb')
         pickle.dump(model, write_file)
 
@@ -74,8 +75,10 @@ def test_models(site, models='all'):
         response[model_name] = test_rmse
 
     best_model = min(model_errors.items(), key=operator.itemgetter(1))[0]
+    
 
-    write_file_path = 'models/{}/best.txt'.format(site)
+    #write_file_path = 'models/{}/best.txt'.format(site)
+    write_file_path = 'models/{}/best'.format(site)
     write_file = open(write_file_path, 'wb')
     pickle.dump(best_model, write_file)
 

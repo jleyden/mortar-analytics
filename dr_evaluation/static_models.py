@@ -15,7 +15,7 @@ from scipy import special
 
 from .feature_engineering import get_time_of_week, get_t_cutoff_values
 from .utils import get_window_of_day, get_workdays, get_closest_station, mean_absolute_percentage_error
-from .baseline_functions import create_pivot, get_X_in_Y_baseline
+from .baseline_functions import create_pivot, get_X_in_Y_baseline,  make_baseline
 
 def power_model(event_day, data, PDP_dates, X=10,Y=10): #event_day input must be in datetime.date(yyyy, mm, dd) format
     #power and weather are column names
@@ -39,10 +39,14 @@ def power_model(event_day, data, PDP_dates, X=10,Y=10): #event_day input must be
                         max_ratio=1.5,
                         sampling="quarterly")
     demand_event=demand_pivot[demand_pivot.index==event_index].values[0]
-    
+
+    weather_baseline=make_baseline(x_days, weather_pivot, name="OAT_Baseline")
+    baseline_weather_mean=weather_baseline.mean()
+
+
     prediction = to_indexed_series(demand_baseline.T.values[0], event_day)
     actual = to_indexed_series(demand_event, event_day)
-    return actual, prediction 
+    return actual, prediction, baseline_weather_mean['OAT_Baseline']
 
 def weather_model(event_day,data, PDP_dates,X=10,Y=10):
     if type(PDP_dates[0]) == str:
@@ -65,9 +69,12 @@ def weather_model(event_day,data, PDP_dates,X=10,Y=10):
                         weather_mapping=True , method='max')
     demand_event=demand_pivot[demand_pivot.index==event_index].values[0]
 
+    weather_baseline=make_baseline(x_days, weather_pivot, name="OAT_Baseline")
+    baseline_weather_mean=weather_baseline.mean()
+
     prediction = to_indexed_series(demand_baseline.T.values[0], event_day)
     actual = to_indexed_series(demand_event, event_day)
-    return actual, prediction 
+    return actual, prediction, baseline_weather_mean['OAT_Baseline']
 
     #PDP is just a placeholder for now
 

@@ -1,8 +1,11 @@
 from electricitycostcalculator.cost_calculator.cost_calculator import CostCalculator
 from electricitycostcalculator.openei_tariff.openei_tariff_analyzer import *
 from electricitycostcalculator.cost_calculator.tariff_structure import *
+from .utils import  get_month_window
 from .get_greenbutton_id import *
 import datetime as dtime
+from datetime import timedelta
+from .get_data import get_df
 import numpy as np
 import pandas as pd
 import math
@@ -25,10 +28,10 @@ def calc_price(power_vector, site, start_datetime, end_datetime):
     tariff['option_exclusion'] = eval_nan(tariff['option_exclusion'])
     tariff['option_mandatory'] = eval_nan(tariff['option_mandatory'])
 
-    total_price = calc_total_price(power_vector, tariff, start_datetime, end_datetime)
+    total_price = calc_total_price(power_vector, tariff, start_datetime, end_datetime, site)
     return total_price
 
-def calc_total_price(power_vector, tariff_options, start_datetime, end_datetime, interval='15min'):
+def calc_total_price(power_vector, tariff_options, start_datetime, end_datetime, site, interval='15min'):
     '''
     returns the total energy cost of power consumption over the given window
     the granularity is determined from the length of the vector and the time window
@@ -69,9 +72,27 @@ def calc_total_price(power_vector, tariff_options, start_datetime, end_datetime,
     pd_prices, map_prices = calculator.get_electricity_price(timestep=TariffElemPeriod.HOURLY,
                                                         range_date=(start_datetime.replace(tzinfo=pytz.timezone('US/Pacific')),
                                                                     end_datetime.replace(tzinfo=pytz.timezone('US/Pacific'))))
+    #print("pd_prices",pd_prices)
     pd_prices = pd_prices.fillna(0)
-    energyPrices = pd_prices.customer_energy_charge.values + pd_prices.pdp_non_event_energy_credit.values + pd_prices.pdp_event_energy_charge.values
+    #energyPrices = pd_prices.customer_energy_charge.values + pd_prices.pdp_non_event_energy_credit.values + pd_prices.pdp_event_energy_charge.values
+    energyPrices = pd_prices.customer_energy_charge.values + pd_prices.pdp_event_energy_charge.values
+    # print('pd_prices.customer_energy_charge.values',pd_prices.customer_energy_charge.values)
+    # print('pd_prices.pdp_non_event_energy_credit.values',pd_prices.pdp_non_event_energy_credit.values)
+    # print('pd_prices.pdp_event_energy_charge.values',pd_prices.pdp_event_energy_charge.values)
+
+    #cannot just add demand prices
     demandPrices = pd_prices.customer_demand_charge_season.values + pd_prices.pdp_non_event_demand_credit.values + pd_prices.customer_demand_charge_tou.values
+    ##demand price increase not yet implemented
+    # month_prior_start, month_prior_end = get_month_window(start_datetime.date(),time_delta=0)
+    # month_prior_energy=get_df(site, month_prior_start, month_prior_end)
+    # print('month energy', month_prior_energy['power'].max()) #check units
+    # print('pdp energy', power_vector.max()) #check units
+    #
+    # if power_vector.max() > month_prior_energy['power'].max():
+    #     increased_demand=power_vector.max()-month_prior_energy['power'].max()
+    #     demand_charge=increased_demand*demandPrices
+    #     print(demand_charge)
+
     return energyPrices @ energy_vector
 
 def power_15min_to_hourly_energy(power_vector):

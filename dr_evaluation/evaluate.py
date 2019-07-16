@@ -7,10 +7,10 @@ from .daily_data import get_daily_data
 def evaluate(site, date, model_name='best'):
     cli = pymortar.Client()
     date = pd.to_datetime(date).date()
-    best_model_path = './models/{}/{}.txt'.format(site, model_name)
+    best_model_path = './models/{}/{}'.format(site, model_name)
     model_file = open(best_model_path, 'rb')
     best_model = pickle.load(model_file)
-    actual, prediction, event_weather = best_model.predict(site, date)
+    actual, prediction, event_weather, baseline_weather = best_model.predict(site, date)
     weather_mean=event_weather[((event_weather.index.hour>=14) & (event_weather.index.hour<=18))].mean()
     daily_data = get_daily_data(site, actual, prediction)
     return {
@@ -21,8 +21,8 @@ def evaluate(site, date, model_name='best'):
             'baseline': daily_data['baseline_cost']
         },
         'OAT_mean': {
-            'event': weather_mean,
-            'baseline': None
+            'event': weather_mean['weather'],
+            'baseline': baseline_weather
         },
         'baseline-type': best_model.name,
         'baseline-rmse': best_model.rmse,

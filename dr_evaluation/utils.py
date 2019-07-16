@@ -8,9 +8,9 @@ from datetime import timedelta
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))+'/'
 
-def mean_absolute_percentage_error(y_true, y_pred): 
+def mean_absolute_percentage_error(y_true, y_pred):
     mask = y_true != 0
-    return (np.fabs(y_true - y_pred)/y_true)[mask].mean() 
+    return (np.fabs(y_true - y_pred)/y_true)[mask].mean()
 
 # function that returns a list of days not including weekends, holidays, or event day
 # if pge == True will return weekdays for PG&E otherwise it will return weekdays for SCE
@@ -42,8 +42,8 @@ def get_date_str(date):
     date = pd.to_datetime(date).date()
     return format(date)
 
-def get_month_window(date):
-    end_date = pd.to_datetime(date).date() + timedelta(days=2)
+def get_month_window(date, time_delta=2):
+    end_date = pd.to_datetime(date).date() + timedelta(days=time_delta)
     start_date = end_date - timedelta(days=30)
     start_ts = pd.to_datetime(start_date).tz_localize('US/Pacific').isoformat()
     end_ts = pd.to_datetime(end_date).tz_localize('US/Pacific').isoformat()
